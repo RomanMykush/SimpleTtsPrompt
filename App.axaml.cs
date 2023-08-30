@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -12,16 +14,16 @@ public partial class App : Application
     {
         // Setting up logger
         var config = new NLog.Config.LoggingConfiguration();
-    #if DEBUG
+#if DEBUG
         var target = new NLog.Targets.ConsoleTarget("log-console");
-    #else
+#else
         var target = new NLog.Targets.FileTarget("log-file") { FileName = "logs.log" };
-    #endif
+#endif
         config.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Fatal, target);
         NLog.LogManager.Configuration = config;
         // Avalonia UI stuff
         AvaloniaXamlLoader.Load(this);
-                
+
         DataContext = this;
     }
 
@@ -33,7 +35,18 @@ public partial class App : Application
     public void OpenPrompt()
     {
         // TODO: Implement dialog window for text prompt
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            return;
 
+        if (desktop.Windows.Any(win => win is PromptWindow))
+            return;
+
+        var dialog = new PromptWindow();
+        dialog.PromptEntered += (s, e) =>
+        {
+            Logger.Info(e.Prompt);
+        };
+        dialog.Show();
     }
 
     public void Exit()
