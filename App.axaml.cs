@@ -4,18 +4,43 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.Configuration;
+using SimpleTtsPrompt.Tts;
+using SimpleTtsPrompt.Tts.SpeechPlayer;
+using SimpleTtsPrompt.Tts.SpeechSynthesizer;
 
 namespace SimpleTtsPrompt;
 
 public partial class App : Application
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    private readonly TtsManager TtsManager;
+    public App()
+    {
+        // Load config file
+        IConfigurationRoot config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables()
+            .Build();
+        // Setting up speech synthesizer
+        var synthesizer = SpeechSynthesizerFactory.Create();
+        // Setting up sound player
+        string? sink = config["Audio:Sink"];
+        ISpeechPlayer player;
+        if (sink != null)
+            player = SpeechPlayerFactory.CreateWithSink(sink);
+        else player = SpeechPlayerFactory.Create();
+
+        TtsManager = new TtsManager(synthesizer, player);
+    }
+
     public override void Initialize()
     {
         // Setting up logger
         var config = new NLog.Config.LoggingConfiguration();
 #if DEBUG
-        var target = new NLog.Targets.ConsoleTarget("log-console");
+        //var target = new NLog.Targets.ConsoleTarget("log-console");
+        var target = new NLog.Targets.FileTarget("log-file") { FileName = "../../../logs.log" };
 #else
         var target = new NLog.Targets.FileTarget("log-file") { FileName = "logs.log" };
 #endif
@@ -25,6 +50,8 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
 
         DataContext = this;
+
+        Logger.Info("I am alive");
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -44,7 +71,7 @@ public partial class App : Application
         var dialog = new PromptWindow();
         dialog.PromptEntered += (s, e) =>
         {
-            Logger.Info(e.Prompt);
+            _ = TtsManager.NewRequest(e.Prompt);
         };
         dialog.Show();
     }
