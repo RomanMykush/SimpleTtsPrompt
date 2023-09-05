@@ -13,8 +13,8 @@ public partial class PromptWindow : Window
         o => o.Prompt,
         (o, v) => o.Prompt = v);
 
+    private static History<string> PreviousPrompts = new(20);
     private string? _Prompt;
-
     public string? Prompt
     {
         get { return _Prompt; }
@@ -27,18 +27,31 @@ public partial class PromptWindow : Window
         InitializeComponent();
         DataContext = this;
     }
+    public void GetPreviousPromptHistory()
+    {
+        PreviousPrompts.SelectPrevious();
+        Prompt = PreviousPrompts.Selected?.Value;
+    }
+    public void GetNextPromptHistory()
+    {
+        PreviousPrompts.SelectNext();
+        Prompt = PreviousPrompts.Selected?.Value;
+    }
     public void Confirm()
     {
         if (string.IsNullOrEmpty(Prompt))
             return;
 
         PromptEntered?.Invoke(this, new PromptEnteredEventArgs(Prompt));
+        if (Prompt != PreviousPrompts.Selected?.Value)
+            PreviousPrompts.Add(Prompt);
+
+        PreviousPrompts.Deselect();
         Prompt = string.Empty;
     }
     public void ConfirmAndClose()
     {
-        if (!string.IsNullOrEmpty(Prompt))
-            PromptEntered?.Invoke(this, new PromptEnteredEventArgs(Prompt));
+        Confirm();
         Close();
     }
 }

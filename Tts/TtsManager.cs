@@ -1,8 +1,6 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Utilities;
 using SimpleTtsPrompt.Tts.SpeechPlayer;
 using SimpleTtsPrompt.Tts.SpeechSynthesizer;
 
@@ -19,7 +17,7 @@ public class TtsManager
         Player = player;
     }
 
-    public async Task NewRequest(string prompt)
+    public async Task NewRequestAsync(string prompt)
     {
         string path = await Synthesizer.SynthesizeFileAsync(prompt);
         await Player.PlayAsync(path);

@@ -9,6 +9,8 @@
         x:CompileBindings="False">
     
     <Window.KeyBindings>
+        <KeyBinding Gesture="Up" Command="{Binding GetPreviousPromptHistory}"/>
+        <KeyBinding Gesture="Down" Command="{Binding GetNextPromptHistory}"/>
         <KeyBinding Gesture="Shift+Enter" Command="{Binding Confirm}"/>
         <KeyBinding Gesture="Enter" Command="{Binding ConfirmAndClose}"/>
         <KeyBinding Gesture="Escape" Command="{Binding Close}"/>

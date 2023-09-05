@@ -50,8 +50,6 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
 
         DataContext = this;
-
-        Logger.Info("I am alive");
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -71,7 +69,7 @@ public partial class App : Application
         var dialog = new PromptWindow();
         dialog.PromptEntered += (s, e) =>
         {
-            _ = TtsManager.NewRequest(e.Prompt);
+            _ = TtsManager.NewRequestAsync(e.Prompt);
         };
         dialog.Show();
     }
